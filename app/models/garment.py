@@ -13,6 +13,7 @@ class Garment(UUIDPrimaryKeyMixin, CreatedAtMixin, Base):
     __tablename__ = "garments"
     user_id: Mapped[UUID] = mapped_column(PGUUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
     original_image_url: Mapped[str] = mapped_column(Text, nullable=False)
+    processed_image_url: Mapped[str | None] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(String(100))
     color: Mapped[str | None] = mapped_column(String(100))
     status: Mapped[str] = mapped_column(String(30), default="uploaded", server_default="uploaded")

@@ -16,6 +16,7 @@ class Settings(BaseSettings):
     s3_bucket_name: str = "fitwin"
     s3_region: str = "us-east-1"
     s3_presigned_url_expire_seconds: int = 3600
+    upload_max_bytes: int = 10 * 1024 * 1024
 
 @lru_cache
 def get_settings() -> Settings:

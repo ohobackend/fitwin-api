@@ -1,5 +1,6 @@
 from pathlib import Path
 from typing import BinaryIO, Any
+from urllib.parse import quote
 import boto3
 from app.core.config import Settings, get_settings
 
@@ -34,3 +35,9 @@ class ObjectStorageService:
             "get_object", Params={"Bucket": self.settings.s3_bucket_name, "Key": object_key},
             ExpiresIn=expires_in or self.settings.s3_presigned_url_expire_seconds,
         )
+
+    def get_object_url(self, object_key: str) -> str:
+        escaped_key = quote(object_key, safe="/")
+        if self.settings.s3_endpoint_url:
+            return f"{self.settings.s3_endpoint_url.rstrip('/')}/{self.settings.s3_bucket_name}/{escaped_key}"
+        return f"https://{self.settings.s3_bucket_name}.s3.{self.settings.s3_region}.amazonaws.com/{escaped_key}"

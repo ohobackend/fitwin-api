@@ -23,3 +23,11 @@ uvicorn app.main:app --reload
 ```bash
 pytest
 ```
+
+## 의류 이미지 업로드
+
+`POST /garments/upload`에 JPEG 또는 PNG 파일을 multipart의 `file` 필드로
+전송합니다. JWT의 `sub`에는 DB에 존재하는 사용자 UUID가 들어가야 합니다.
+원본과 `rembg` 처리 결과는 Object Storage에 저장되며, 파일명 기반 카테고리와
+전경의 대표 색상이 DB에 기록됩니다. 처리 상태는
+`uploaded → processing → done`으로 바뀌고 오류 발생 시 `failed`로 보존됩니다.
