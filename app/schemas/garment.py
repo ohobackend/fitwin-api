@@ -13,3 +13,8 @@ class GarmentUploadResponse(BaseModel):
     color: str | None
     status: Literal["uploaded", "processing", "done", "failed"]
     created_at: datetime
+
+class GarmentUploadAccepted(BaseModel):
+    job_id: str
+    garment_id: UUID
+    status: Literal["uploaded"]

@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     s3_region: str = "us-east-1"
     s3_presigned_url_expire_seconds: int = 3600
     upload_max_bytes: int = 10 * 1024 * 1024
+    celery_broker_url: str = "redis://localhost:6379/0"
+    celery_result_backend: str = "redis://localhost:6379/1"
+    celery_task_always_eager: bool = False
+    celery_task_eager_propagates: bool = True
 
 @lru_cache
 def get_settings() -> Settings:

@@ -1,3 +1,4 @@
+from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO, Any
 from urllib.parse import quote
@@ -29,6 +30,11 @@ class ObjectStorageService:
         destination_path.parent.mkdir(parents=True, exist_ok=True)
         self.client.download_file(self.settings.s3_bucket_name, object_key, str(destination_path))
         return destination_path
+
+    def download_bytes(self, object_key: str) -> bytes:
+        buffer = BytesIO()
+        self.client.download_fileobj(self.settings.s3_bucket_name, object_key, buffer)
+        return buffer.getvalue()
 
     def create_download_url(self, object_key: str, expires_in: int | None = None) -> str:
         return self.client.generate_presigned_url(

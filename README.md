@@ -31,3 +31,17 @@ pytest
 원본과 `rembg` 처리 결과는 Object Storage에 저장되며, 파일명 기반 카테고리와
 전경의 대표 색상이 DB에 기록됩니다. 처리 상태는
 `uploaded → processing → done`으로 바뀌고 오류 발생 시 `failed`로 보존됩니다.
+
+## 비동기 워커
+
+Redis와 Celery 워커를 실행한 뒤 API 서버를 시작합니다.
+
+```bash
+docker compose up -d db minio redis worker
+uvicorn app.main:app --reload
+```
+
+의류 업로드는 `202 Accepted`와 `job_id`를 즉시 반환합니다. 처리 상태는
+`GET /jobs/{job_id}`에서 `pending`, `processing`, `retrying`, `done`, `failed`로
+조회할 수 있습니다. 전처리 실패 작업은 1초, 2초, 4초 간격으로 최대 3회
+재시도됩니다.

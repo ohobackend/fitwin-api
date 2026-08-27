@@ -3,8 +3,8 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config import get_settings
 from app.db.session import get_db_session
-from app.schemas.garment import GarmentUploadResponse
-from app.services.garment_service import GarmentProcessingError, UserNotFoundError, upload_and_process_garment
+from app.schemas.garment import GarmentUploadAccepted
+from app.services.garment_service import QueueSubmissionError, UserNotFoundError, create_garment_job
 from app.services.storage import ObjectStorageService
 
 router = APIRouter(prefix="/garments", tags=["garments"])
@@ -13,13 +13,13 @@ ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png"}
 def get_storage_service() -> ObjectStorageService:
     return ObjectStorageService()
 
-@router.post("/upload", response_model=GarmentUploadResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/upload", response_model=GarmentUploadAccepted, status_code=status.HTTP_202_ACCEPTED)
 async def upload_garment(
     request: Request,
     file: UploadFile = File(...),
     session: AsyncSession = Depends(get_db_session),
     storage: ObjectStorageService = Depends(get_storage_service),
-) -> GarmentUploadResponse:
+) -> GarmentUploadAccepted:
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(status_code=415, detail="Only JPEG and PNG images are supported")
     max_bytes = get_settings().upload_max_bytes
@@ -34,9 +34,9 @@ async def upload_garment(
     except (KeyError, TypeError, ValueError) as exc:
         raise HTTPException(status_code=401, detail="Token subject must be a user UUID") from exc
     try:
-        garment = await upload_and_process_garment(session, storage, user_id, image_bytes, file.filename, file.content_type)
+        garment, job_id = await create_garment_job(session, storage, user_id, image_bytes, file.filename, file.content_type)
     except UserNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Authenticated user does not exist") from exc
-    except GarmentProcessingError as exc:
-        raise HTTPException(status_code=500, detail={"message": "Garment preprocessing failed", "garment_id": str(exc.garment_id)}) from exc
-    return GarmentUploadResponse.model_validate(garment)
+    except QueueSubmissionError as exc:
+        raise HTTPException(status_code=503, detail={"message": "Could not queue garment processing", "garment_id": str(exc.garment_id)}) from exc
+    return GarmentUploadAccepted(job_id=job_id, garment_id=garment.id, status="uploaded")
