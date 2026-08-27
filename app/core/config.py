@@ -31,6 +31,7 @@ class Settings(BaseSettings):
     trellis_seed: int = 1
     trellis_mesh_simplify: float = 0.95
     trellis_texture_size: int = 1024
+    product_store_base_url: str = "https://shop.fitwin.example/products"
 
 @lru_cache
 def get_settings() -> Settings:

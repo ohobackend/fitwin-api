@@ -95,3 +95,20 @@ cd tests/threejs
 npm install
 npm run validate -- /path/to/generated.glb
 ```
+
+## 구매 전환 API
+
+현재 커머스 연동은 목 구현이며 `PRODUCT_STORE_BASE_URL`을 실제 쇼핑몰 주소로
+교체할 수 있습니다.
+
+- `GET /products/{id}/link`: 상품 상세 링크 JSON 반환
+- `GET /products/{id}/qr`: 상품 링크를 담은 PNG QR 코드 반환
+- `POST /cart/add`: 인증 사용자 기준 목 장바구니 항목 반환
+
+```json
+{
+  "product_id": "sku-100",
+  "quantity": 1,
+  "garment_id": null
+}
+```
