@@ -72,3 +72,26 @@ curl -X POST http://localhost:8000/fitting/2d \
 카테고리는 의류 DB 값으로 자동 매핑하며 필요하면 `category=upperbody|lowerbody|dress`와
 `model_type=hd|dc`를 명시할 수 있습니다. 캐시 미스는 `202`와 `job_id`, 완료된 동일
 조합은 `200`과 기존 `result_url`을 반환합니다.
+
+## TRELLIS 3D 자산 생성
+
+TRELLIS는 2D 피팅 워커와 분리된 `gpu_3d` 큐에서 동작합니다.
+
+```bash
+alembic upgrade head
+bash scripts/install_trellis.sh
+bash scripts/run_trellis_worker.sh
+```
+
+`POST /assets/3d/generate`에 `{"garment_id":"<UUID>"}`를 전송하면 작업을
+등록하고, `GET /assets/3d/{garment_id}`에서 상태와 `glb_url`을 조회할 수 있습니다.
+완료된 자산의 중복 생성 요청은 기존 결과를 즉시 반환합니다.
+
+생성된 GLB는 업로드 전 glTF 2.0 구조와 렌더링 가능한 mesh를 검사합니다. 실제
+Three.js 로더 호환성은 다음 명령으로 추가 검증할 수 있습니다.
+
+```bash
+cd tests/threejs
+npm install
+npm run validate -- /path/to/generated.glb
+```

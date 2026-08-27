@@ -1,0 +1,7 @@
+{
+  "name": "fitwin-glb-compatibility-test",
+  "private": true,
+  "type": "module",
+  "scripts": {"validate": "node validate-glb.mjs"},
+  "dependencies": {"three": "0.174.0"}
+}

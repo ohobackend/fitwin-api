@@ -4,7 +4,7 @@ from app.core.config import get_settings
 settings = get_settings()
 celery_app = Celery(
     "fitwin", broker=settings.celery_broker_url, backend=settings.celery_result_backend,
-    include=["app.worker.tasks.garments", "app.worker.tasks.fitting_2d"],
+    include=["app.worker.tasks.garments", "app.worker.tasks.fitting_2d", "app.worker.tasks.assets_3d"],
 )
 celery_app.conf.update(
     task_track_started=True,

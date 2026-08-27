@@ -13,4 +13,6 @@ class Asset3D(UUIDPrimaryKeyMixin, CreatedAtMixin, Base):
     glb_url: Mapped[str | None] = mapped_column(Text)
     thumbnail_url: Mapped[str | None] = mapped_column(Text)
     status: Mapped[str] = mapped_column(String(30), default="pending", server_default="pending")
+    job_id: Mapped[str | None] = mapped_column(String(50), index=True)
+    error_message: Mapped[str | None] = mapped_column(Text)
     garment: Mapped["Garment"] = relationship(back_populates="asset_3d")

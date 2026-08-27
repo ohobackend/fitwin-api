@@ -26,6 +26,11 @@ class Settings(BaseSettings):
     ootdiffusion_steps: int = 20
     ootdiffusion_scale: float = 2.0
     ootdiffusion_seed: int = -1
+    trellis_path: str = "vendor/TRELLIS"
+    trellis_model_id: str = "microsoft/TRELLIS-image-large"
+    trellis_seed: int = 1
+    trellis_mesh_simplify: float = 0.95
+    trellis_texture_size: int = 1024
 
 @lru_cache
 def get_settings() -> Settings:
