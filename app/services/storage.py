@@ -1,7 +1,7 @@
 from io import BytesIO
 from pathlib import Path
 from typing import BinaryIO, Any
-from urllib.parse import quote
+from urllib.parse import quote, unquote, urlparse
 import boto3
 from app.core.config import Settings, get_settings
 
@@ -47,3 +47,8 @@ class ObjectStorageService:
         if self.settings.s3_endpoint_url:
             return f"{self.settings.s3_endpoint_url.rstrip('/')}/{self.settings.s3_bucket_name}/{escaped_key}"
         return f"https://{self.settings.s3_bucket_name}.s3.{self.settings.s3_region}.amazonaws.com/{escaped_key}"
+
+    def object_key_from_url(self, object_url: str) -> str:
+        path = unquote(urlparse(object_url).path).lstrip("/")
+        bucket_prefix = f"{self.settings.s3_bucket_name}/"
+        return path[len(bucket_prefix):] if path.startswith(bucket_prefix) else path

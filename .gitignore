@@ -8,3 +8,7 @@ venv/
 .pytest_cache/
 .ruff_cache/
 .coverage
+frontend/node_modules/
+frontend/dist/
+vendor/
+.venv-ootd/

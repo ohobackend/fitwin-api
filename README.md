@@ -45,3 +45,30 @@ uvicorn app.main:app --reload
 `GET /jobs/{job_id}`에서 `pending`, `processing`, `retrying`, `done`, `failed`로
 조회할 수 있습니다. 전처리 실패 작업은 1초, 2초, 4초 간격으로 최대 3회
 재시도됩니다.
+
+## 2D 가상 피팅
+
+GPU 워커 환경은 공식 OOTDiffusion 코드 및 가중치와 분리되어 있습니다.
+
+```bash
+bash scripts/install_ootdiffusion.sh
+bash scripts/run_gpu_worker.sh
+```
+
+설치 스크립트는 공식 GitHub 저장소, `levihsu/OOTDiffusion` 체크포인트와
+`openai/clip-vit-large-patch14`를 내려받습니다. 공식 구현과 마찬가지로 Linux,
+CUDA 11.8 환경을 기준으로 합니다. 모델 라이선스는 비상업적 사용 제한이 있는
+CC BY-NC-SA 4.0이므로 실제 서비스 적용 전에 반드시 확인해야 합니다.
+
+`POST /fitting/2d`는 multipart 요청을 받습니다.
+
+```bash
+curl -X POST http://localhost:8000/fitting/2d \
+  -H "Authorization: Bearer <JWT>" \
+  -F "garment_id=<GARMENT_UUID>" \
+  -F "model_image=@person.jpg"
+```
+
+카테고리는 의류 DB 값으로 자동 매핑하며 필요하면 `category=upperbody|lowerbody|dress`와
+`model_type=hd|dc`를 명시할 수 있습니다. 캐시 미스는 `202`와 `job_id`, 완료된 동일
+조합은 `200`과 기존 `result_url`을 반환합니다.

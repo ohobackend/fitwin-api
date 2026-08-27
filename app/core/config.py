@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     celery_result_backend: str = "redis://localhost:6379/1"
     celery_task_always_eager: bool = False
     celery_task_eager_propagates: bool = True
+    ootdiffusion_path: str = "vendor/OOTDiffusion"
+    ootdiffusion_gpu_id: int = 0
+    ootdiffusion_steps: int = 20
+    ootdiffusion_scale: float = 2.0
+    ootdiffusion_seed: int = -1
 
 @lru_cache
 def get_settings() -> Settings:
