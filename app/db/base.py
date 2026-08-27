@@ -3,4 +3,5 @@ from app.models.base import Base
 from app.models.fitting_result import FittingResult
 from app.models.garment import Garment
 from app.models.user import User
-__all__ = ["Asset3D", "Base", "FittingResult", "Garment", "User"]
+from app.models.job_failure_log import JobFailureLog
+__all__ = ["Asset3D", "Base", "FittingResult", "Garment", "JobFailureLog", "User"]

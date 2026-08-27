@@ -7,6 +7,7 @@ from app.db.sync_session import SyncSessionFactory
 from app.models.garment import Garment
 from app.services.garment_classifier import classify_category, classify_dominant_color
 from app.services.storage import ObjectStorageService
+from app.services.image_validator import validate_image_bytes
 from app.worker.celery_app import celery_app
 
 logger = get_task_logger(__name__)
@@ -21,9 +22,11 @@ def process_garment(self, garment_id: str, original_key: str, processed_key: str
             session.commit()
 
         original_bytes = storage.download_bytes(original_key)
+        validate_image_bytes(original_bytes)
         processed_bytes = remove(original_bytes)
         if not isinstance(processed_bytes, bytes):
             raise ValueError("rembg did not return image bytes")
+        validate_image_bytes(processed_bytes, require_foreground=True)
         category = classify_category(filename)
         color = classify_dominant_color(processed_bytes)
         storage.upload_fileobj(BytesIO(processed_bytes), processed_key, "image/png")

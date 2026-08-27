@@ -10,6 +10,7 @@ from app.integrations.ootdiffusion import get_ootdiffusion_runner
 from app.models.fitting_result import FittingResult
 from app.models.garment import Garment
 from app.services.storage import ObjectStorageService
+from app.services.image_validator import validate_image_bytes
 from app.worker.celery_app import celery_app
 
 logger = get_task_logger(__name__)
@@ -45,6 +46,7 @@ def process_fitting_2d(
             )
             output = BytesIO()
             image.save(output, format="PNG")
+            validate_image_bytes(output.getvalue())
 
         result_key = f"fittings/2d/{result_id}/result.png"
         output.seek(0)

@@ -2,6 +2,7 @@ from typing import Literal
 from uuid import UUID
 from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.concurrency import run_in_threadpool
 from app.core.config import get_settings
 from app.db.session import get_db_session
 from app.schemas.fitting import Fitting2DResponse
@@ -10,6 +11,7 @@ from app.services.fitting_service import (
     create_or_get_fitting_job,
 )
 from app.services.storage import ObjectStorageService
+from app.services.image_validator import InvalidImageError, validate_image_bytes
 
 router = APIRouter(prefix="/fitting", tags=["fitting"])
 
@@ -34,6 +36,10 @@ async def create_fitting_2d(
         raise HTTPException(status_code=400, detail="Model image is empty")
     if len(image_bytes) > limit:
         raise HTTPException(status_code=413, detail=f"Model image exceeds the {limit}-byte limit")
+    try:
+        await run_in_threadpool(validate_image_bytes, image_bytes)
+    except InvalidImageError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     try:
         user_id = UUID(str(request.state.user["sub"]))
     except (KeyError, TypeError, ValueError) as exc:

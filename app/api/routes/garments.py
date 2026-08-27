@@ -1,11 +1,13 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi.concurrency import run_in_threadpool
 from app.core.config import get_settings
 from app.db.session import get_db_session
 from app.schemas.garment import GarmentUploadAccepted
 from app.services.garment_service import QueueSubmissionError, UserNotFoundError, create_garment_job
 from app.services.storage import ObjectStorageService
+from app.services.image_validator import InvalidImageError, validate_image_bytes
 
 router = APIRouter(prefix="/garments", tags=["garments"])
 ALLOWED_CONTENT_TYPES = {"image/jpeg", "image/png"}
@@ -29,6 +31,10 @@ async def upload_garment(
         raise HTTPException(status_code=400, detail="Image file is empty")
     if len(image_bytes) > max_bytes:
         raise HTTPException(status_code=413, detail=f"Image exceeds the {max_bytes}-byte limit")
+    try:
+        await run_in_threadpool(validate_image_bytes, image_bytes)
+    except InvalidImageError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
     try:
         user_id = UUID(str(request.state.user["sub"]))
     except (KeyError, TypeError, ValueError) as exc:

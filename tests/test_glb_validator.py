@@ -11,11 +11,25 @@ def make_glb(document: dict) -> bytes:
 
 def test_web_compatible_glb_is_accepted(tmp_path) -> None:
     path = tmp_path / "asset.glb"
-    path.write_bytes(make_glb({"asset": {"version": "2.0"}, "meshes": [{"primitives": [{}]}]}))
+    path.write_bytes(make_glb({
+        "asset": {"version": "2.0"},
+        "accessors": [{"count": 3, "type": "VEC3", "componentType": 5126}],
+        "meshes": [{"primitives": [{"attributes": {"POSITION": 0}}]}],
+    }))
     assert validate_glb(path)["meshes"] == 1
 
 def test_glb_without_mesh_is_rejected(tmp_path) -> None:
     path = tmp_path / "empty.glb"
     path.write_bytes(make_glb({"asset": {"version": "2.0"}}))
+    with pytest.raises(InvalidGLBError):
+        validate_glb(path)
+
+def test_truncated_glb_chunk_is_rejected(tmp_path) -> None:
+    path = tmp_path / "truncated.glb"
+    path.write_bytes(make_glb({
+        "asset": {"version": "2.0"},
+        "accessors": [{"count": 3}],
+        "meshes": [{"primitives": [{"attributes": {"POSITION": 0}}]}],
+    })[:-1])
     with pytest.raises(InvalidGLBError):
         validate_glb(path)

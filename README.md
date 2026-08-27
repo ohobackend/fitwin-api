@@ -96,6 +96,33 @@ npm install
 npm run validate -- /path/to/generated.glb
 ```
 
+## 품질 검수와 실패 로그
+
+업로드 및 AI 결과 이미지는 디코딩 가능 여부, 크기, 픽셀 수, 시각 정보와 투명
+전경을 검사합니다. GLB는 헤더, chunk 경계, glTF 2.0, mesh POSITION accessor와
+내장 buffer 길이를 검사한 후에만 Object Storage에 저장됩니다.
+
+최종 재시도까지 실패한 Celery 작업은 `job_failure_logs`에 기록됩니다. 관리자
+JWT에 `role: "admin"` 또는 `is_admin: true` claim을 넣어 조회할 수 있습니다.
+
+```bash
+curl http://localhost:8000/admin/failures?limit=50 \
+  -H "Authorization: Bearer <ADMIN_JWT>"
+```
+
+모든 API 오류는 다음 형식을 사용합니다.
+
+```json
+{"status_code": 422, "message": "Request validation failed", "detail": []}
+```
+
+프론트엔드 전달용 명세는 루트의 `openapi.json`이며 코드 변경 후 다음 명령으로
+다시 생성할 수 있습니다.
+
+```bash
+python scripts/export_openapi.py
+```
+
 ## 구매 전환 API
 
 현재 커머스 연동은 목 구현이며 `PRODUCT_STORE_BASE_URL`을 실제 쇼핑몰 주소로

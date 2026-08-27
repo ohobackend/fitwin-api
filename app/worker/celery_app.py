@@ -18,3 +18,5 @@ celery_app.conf.update(
     task_eager_propagates=settings.celery_task_eager_propagates,
     task_store_eager_result=True,
 )
+
+import app.worker.failure_logging  # noqa: E402,F401

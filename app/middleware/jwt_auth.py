@@ -4,6 +4,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 from app.core.security import decode_access_token
+from app.core.error_handlers import error_content
 
 PUBLIC_PATHS = {"/health", "/docs", "/openapi.json", "/redoc"}
 
@@ -18,11 +19,11 @@ class JWTAuthMiddleware(BaseHTTPMiddleware):
             return await call_next(request)
         scheme, _, token = request.headers.get("Authorization", "").partition(" ")
         if scheme.lower() != "bearer" or not token:
-            return JSONResponse(status_code=401, content={"detail": "Bearer token required"})
+            return JSONResponse(status_code=401, content=error_content(401, "Bearer token required"))
         try:
             request.state.user = decode_access_token(token, self.secret_key, self.algorithm)
         except jwt.ExpiredSignatureError:
-            return JSONResponse(status_code=401, content={"detail": "Token has expired"})
+            return JSONResponse(status_code=401, content=error_content(401, "Token has expired"))
         except jwt.InvalidTokenError:
-            return JSONResponse(status_code=401, content={"detail": "Invalid token"})
+            return JSONResponse(status_code=401, content=error_content(401, "Invalid token"))
         return await call_next(request)

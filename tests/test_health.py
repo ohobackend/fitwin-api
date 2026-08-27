@@ -9,4 +9,8 @@ def test_health_check_is_public() -> None:
 def test_unknown_private_path_requires_token() -> None:
     response = TestClient(app).get("/private")
     assert response.status_code == 401
-    assert response.json() == {"detail": "Bearer token required"}
+    assert response.json() == {
+        "status_code": 401,
+        "message": "Bearer token required",
+        "detail": None,
+    }
